@@ -24,6 +24,7 @@ Everything else came with the HTML5 Boilerplate
 - it’s a toggle because if it was another field: doesn’t make sense to want to match with a title name AND to want a separate set of comics that have a similar starting name
 
 - startYear and format and orderBy are not commonly used, to avoid overwhelming user with options, we have them as advanced options
+- note included on orderby 
 
 responsive design - everything still fits and is neatly visible up until 390px in screen width, the standard size of mobile screen is 480 px
 - search button moves over to the right at 880px to avoid getting too cluttered with the advanced criteria option

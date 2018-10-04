@@ -178,6 +178,7 @@ form {
 }
 
 #orderby-container {
+  width: 140px;
   margin: 20px 20px 0 20px;
 }
 .start-format-container {
