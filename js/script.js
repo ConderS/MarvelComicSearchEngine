@@ -207,6 +207,29 @@ function showLoading() {
 
 $(document).ready(function() {
   $(".loading-container").hide();
+  $(".adv-container").hide();
+
+  var titleExact = false;
+
+  $('#switch-1').change(function() {
+    if (this.checked) {
+      $('.search-label').text('Title matches...');
+      titleExact = true;
+    } else {
+      $('.search-label').text('Title starts with...');
+      var titleExact = false;
+    }
+  });
+
+  $('.adv-button').click(function() {
+    if($('.adv-container').css('display') === 'none') {
+      $('.adv-container').show();
+      $('.adv-button').text('Less Search Criteria');
+    } else {
+      $('.adv-container').hide();
+      $('.adv-button').text('More Search Criteria');
+    }
+  });
 
   document.getElementById('search-form').addEventListener('submit', function (e) {
     e.preventDefault();
@@ -217,16 +240,16 @@ $(document).ready(function() {
     const COMICS_BASE_URI = `https://gateway.marvel.com/v1/public/comics?apikey=${PUBLIC}`;
 
     var query = `${COMICS_BASE_URI}&ts=${ts}&hash=${hash}`;
-    const title = document.getElementById('title-input').value;
-    const titleStartsWith = document.getElementById('titlestartwith-input').value;
-    const startYear = document.getElementById('startyear-field').value;
-    const format = document.getElementById('startyear-field').value;
-    if (title) {
-      query += `&title=${title}`;
-    }
-
-    if (titleStartsWith) {
-      query += `&titleStartsWith=${titleStartsWith}`;
+    const titleStartsWithOrTitle = document.getElementById('titleStartWith-input').value;
+    const startYear = document.getElementById('startYear-field').value;
+    const format = document.getElementById('format-select').value;
+    console.log(format);
+    if (titleStartsWithOrTitle) {
+      if (!titleExact) {
+        query += `&titleStartsWith=${titleStartsWithOrTitle}`;
+      } else {
+        query += `$title=${titleStartsWithOrTitle}`;
+      }
     }
 
     if (startYear) {
@@ -240,6 +263,6 @@ $(document).ready(function() {
     charactersMap.clear();
     showLoading();
     $(".submit-button").attr("disabled", "disabled");
-    getComics(query);
+    // getComics(query);
 }, false);
 });
