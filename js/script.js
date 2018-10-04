@@ -263,6 +263,6 @@ $(document).ready(function() {
     charactersMap.clear();
     showLoading();
     $(".submit-button").attr("disabled", "disabled");
-    // getComics(query);
+    getComics(query);
 }, false);
 });
