@@ -129,10 +129,16 @@ form {
   min-width: 180px;
 }
 
+.search-container {
+  width: 100%;
+}
+
 .search-switch {
-  width: 25%;
-  margin-left: 15px;
-  padding-left: 15px !important;
+  width: auto;
+
+  /* margin-left: 15px; */
+  text-align: center;
+  /* padding-left: 15px !important; */
 }
 
 #switch-1 {
@@ -144,10 +150,10 @@ form {
 }
 
 @media (max-width: 715px) {
-  .search-switch-label {
+  /* .search-switch-label {
     font-size: 12px;
     line-height: 0;
-  }
+  } */
 }
 
 .adv-container {

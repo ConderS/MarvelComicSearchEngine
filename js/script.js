@@ -92,9 +92,11 @@ function showComics() {
   // Render buttons
   var buttons =
     `<div class="buttons-container">
-        <button id="back" class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored">
+        <button id="backward" class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored">
           <i class="material-icons">arrow_back</i>
         </button>
+
+        <p id="page-num">${page+1}</p>
 
         <button id="forward" class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored">
           <i class="material-icons">arrow_forward</i>
@@ -170,7 +172,7 @@ function getComics(query){
           page = 0;
 
           if (charactersMap.size === 0) {
-            showError("No characters found! Try a different search.");
+            showError("No characters found! Try searching for different comics.");
             return;
           }
           $(".submit-button").removeAttr("disabled");
@@ -185,7 +187,7 @@ function getComics(query){
 }
 
 function addListenerToButtons() {
-  document.getElementById('forward').click(function () {
+  $('#forward').click(function () {
     console.log("Paginating forward");
 
     if (page < charactersMap.size()) {
@@ -193,6 +195,16 @@ function addListenerToButtons() {
     } else {
       removePageElements();
       showError("No more characters to show! Go back to previous pages or start a new search.");
+    }
+
+    showComics();
+  });
+
+  $('#backward').click(function () {
+    console.log("Paginating forward");
+
+    if (page > 0) {
+      page--;
     }
 
     showComics();

@@ -38,10 +38,12 @@
         <input id="titleStartWith-input" class="mdl-textfield__input" type="text">
         <label class="search-label mdl-textfield__label" for="titleStartWith-input">Title starts with...</label>
       </div>
-      <label id="search-switch" class="search-switch mdl-switch mdl-js-switch mdl-js-ripple-effect" for="switch-1">
-        <input type="checkbox" id="switch-1" class="mdl-switch__input">
-        <span class="search-switch-label mdl-switch__label">Search for Title Exactly as Inputted</span>
-      </label>
+      <div class="search-container">
+        <label id="search-switch" class="search-switch mdl-switch mdl-js-switch mdl-js-ripple-effect" for="switch-1">
+          <input type="checkbox" id="switch-1" class="mdl-switch__input">
+          <span class="search-switch-label mdl-switch__label">Search for Title Exactly as Inputted</span>
+        </label>
+      </div>
 
       <!-- <span class="mdl-tooltip" data-mdl-for="search-field  ">
         Search for comics by matching title
@@ -84,7 +86,7 @@
       </form>
   </div>
   <!-- <div class="buttons-container">
-    <button id="back" class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored">
+    <button id="backward" class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored">
       <i class="material-icons">arrow_back</i>
     </button>
 
@@ -97,6 +99,7 @@
     <div class="loading-container">
       <div class="loading-spinner mdl-spinner mdl-js-spinner is-active"></div>
     </div>
+
     <!-- <div class="mdl-cell mdl-cell--4-col">
       <div class="demo-card-square mdl-card mdl-shadow--2dp">
         <div class="mdl-card__title mdl-card--expand">
