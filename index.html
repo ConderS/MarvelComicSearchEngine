@@ -65,16 +65,19 @@
           <label class="mdl-selectfield__label" for="orderby-select">Order By</label>
         </div>
         <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="asc">
-          <input type="radio" id="asc" class="mdl-radio__button" name="order" value="asc" checked>
+          <input type="radio" id="asc" class="mdl-radio__button" name="orderby-rad" value="1" checked>
           <span class="mdl-radio__label">Ascending</span>
         </label>
         <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="desc">
-          <input type="radio" id="desc" class="mdl-radio__button" name="order" value="desc">
+          <input type="radio" id="desc" class="mdl-radio__button" name="orderby-rad" value="0">
           <span class="mdl-radio__label">Descending</span>
         </label>
         <label class="orderby-note">
           <p>
-            Note: If default ordering (i.e. blank) is selected, then results will always return in ascending order.
+            Note: If the default order-by filter (i.e. blank) is selected, then the results will also return in default order.
+          </p>
+          <p>
+            Setting ascending/descending filters will have no effect.
           </p>
         </label>
 
@@ -121,14 +124,16 @@
       </form>
   </div>
   <!-- <div class="buttons-container">
-    <button id="backward" class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored">
-      <i class="material-icons">arrow_back</i>
-    </button>
+      <button id="backward" class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored">
+        <i class="material-icons">arrow_back</i>
+      </button>
 
-    <button id="forward" class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored">
-      <i class="material-icons">arrow_forward</i>
-    </button>
-  </div> -->
+      <p id="page-num">${page+1}</p>
+
+      <button id="forward" class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored">
+        <i class="material-icons">arrow_forward</i>
+      </button>
+    </div> -->
 
   <div id="results" class="mdl-grid">
     <div class="loading-container">
@@ -142,6 +147,7 @@
         </div>
         <div class="char-img-text-container">
           <h2 class="char-img-text mdl-card__title-text">Update</h2>
+          <p class="char-comic-text mdl-card__supporting-text">Spider-Man Awesomeness, #192, Hardcover, 2019</p>
         </div>
         <div class="char-supporting-text mdl-card__supporting-text">
           Lorem ipsum dolor sit amet, consectetur adipiscing elit.

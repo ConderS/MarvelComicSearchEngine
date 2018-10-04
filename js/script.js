@@ -1,10 +1,12 @@
-const PUBLIC = 'e2ffbd228400b493187c70c06bee9e35';
-const PRIVATE = '4742aacfec7c49699f9280b9c4d1f6055ff8c3d0';
+// const PUBLIC = 'e2ffbd228400b493187c70c06bee9e35';
+// const PRIVATE = '4742aacfec7c49699f9280b9c4d1f6055ff8c3d0';
+const PUBLIC = '4a59100a08492e87335d1e3c5dcfa5f9';
+const PRIVATE = 'd14dde3c2b39fa1352d59fed07d76cac63cca011';
 const BASE_URI = `https://gateway.marvel.com/v1/public/comics`;
 
 var showingComics = false;
-var charactersMap = new Map();
 var page = 0;
+var globalCharsArr = [];
 
 function removePageElements() {
   $(".char").remove();
@@ -16,9 +18,29 @@ function removePageElements() {
   $(".submit-button").removeAttr("disabled");
 }
 
+function removePageElementsKeepButtons() {
+  $(".char").remove();
+  $(".no-result-container").remove();
+  $(".loading").remove();
+  $(".loading-container").hide();
+
+  $(".submit-button").removeAttr("disabled");
+}
+
 function showError(msg) {
   removePageElements();
-  charactersMap.clear();
+
+  var noResultMsg =
+  `<div class="no-result-container">
+    <p class="no-result server-error mdl-card__title-text">
+      ${msg}
+    </p>
+   </div>`;
+  $("#results").append(noResultMsg);
+}
+
+function showErrorWithButtons(msg) {
+  removePageElementsKeepButtons();
 
   var noResultMsg =
   `<div class="no-result-container">
@@ -36,40 +58,36 @@ function createComicPromise(comics) {
     }
     return false;
   }).map(comic => {
-    const comicCharacters = JSON.parse(localStorage.getItem(comic.id));
-    if (comicCharacters) {
+    const storedCharacter = JSON.parse(localStorage.getItem(comic.id));
+    if (storedCharacter) {
       // Depending on if we still use global map, must iterate through comic characters
       // to store in global storage Map
-      return comicCharacters;
-    } else {
-      localStorage.setItem(comic.id, JSON.stringify({}));
+      // console.log("Found stored character: ", storedCharacter);
+      // return storedCharacter;
     }
 
     return new Promise((resolve, reject) => {
       const ts = Date.now().toString();
       const hash = md5(ts+PRIVATE+PUBLIC);
       $.ajax({
-        url: `${BASE_URI}/${comic.id}/characters?apikey=${PUBLIC}&ts=${ts}&hash=${hash}`,
+        url: `${BASE_URI}/${comic.id}/characters?apikey=${PUBLIC}&ts=${ts}&hash=${hash}&orderBy=name`,
         type: "get",
         success: function(response) {
 
           charArray = response.data.results;
 
-          for(var i = 0; i < response.data.results.length; i++) {
-            const character = charArray[i];
-
-            // TODO: Add stuff from local storage to charactersMap somehow
-
-            if (
-              charactersMap.has(character.name) ||
-              JSON.parse(localStorage.getItem(comic.id)[character.name])
-            ) {
-              continue;
-            }
+          if (charArray.length < 1) {
+            localStorage.setItem(comic.id, null); // don't know how to take advantage of this
+            return null;
+          }
+            const character = charArray[0];
 
             const characterInfo = {
               name: character.name,
-              description: character.description
+              description: character.description,
+              comicTitle: comic.title,
+              comicIssueNumber: comic.issueNumber,
+              comicFormat: comic.format,
             }
 
             if ("path" in character.thumbnail && character.thumbnail.path !== "") {
@@ -80,13 +98,11 @@ function createComicPromise(comics) {
               characterInfo.thumbnailExt = "";
             }
 
-            const storedCharDict = JSON.parse(localStorage.getItem(comic.id));
-            storedCharDict[character.name] = characterInfo;
-            localStorage.setItem(comic.id, JSON.stringify(storedCharDict));
+            // Map comic id to the object containing the first alphabeticized
+            //  character of the comic
+            localStorage.setItem(comic.id, JSON.stringify(characterInfo));
 
-            charactersMap.set(character.name, characterInfo);
-          }
-          resolve(charactersMap); // doesn't actually matter what we resolve with here
+          resolve(characterInfo); // doesn't actually matter what we resolve with here
         },
         error: function(jqXHR, textStatus, errorThrown) {
           var msg = "A server error has occurred. Please reload the page and try again.";
@@ -102,15 +118,33 @@ function createComicPromise(comics) {
   return comicPromiseIDsWithCharacters;
 }
 
-function showComics() {
-  removePageElements();
+function addListenerToButtons() {
+  $('#forward').click(function () {
 
-  const charsArr = Array.from(charactersMap).sort((a, b) => {
-    return a[0].localeCompare(b[0]);
+    page++;
+
+    console.log(globalCharsArr);
+    console.log(page);
+    showComics();
+
+    if (((page+1)*10) > (globalCharsArr.length-1)) {
+      $('#forward').attr('disabled', 'disabled');
+    }
   });
 
-  console.log(charsArr);
+  $('#backward').click(function () {
 
+    page--;
+    if (page < 0) {
+      page = 0;
+      $('#backward').attr('disabled', 'disabled');
+    }
+
+    showComics();
+  });
+}
+
+function addButtons() {
   // Render buttons
   var buttons =
     `<div class="buttons-container">
@@ -127,6 +161,19 @@ function showComics() {
 
   $("#results").before(buttons);
 
+  if (page === 0) {
+    $('#backward').attr('disabled', 'disabled');
+  }
+  if (((page+1)*10) > (globalCharsArr.length-1)) {
+    $('#forward').attr('disabled', 'disabled');
+  }
+}
+
+function showComics() {
+  removePageElements();
+  const charsArr = globalCharsArr;
+
+  addButtons();
   addListenerToButtons();
 
   // Render results
@@ -134,7 +181,7 @@ function showComics() {
     if (i >= (page*10 + 10)) {
       continue;
     }
-     const character = charsArr[i][1];
+     const character = charsArr[i];
 
      var description =
       character.description ?
@@ -148,6 +195,12 @@ function showComics() {
          </div>
          <div class="char-img-text-container">
           <h2 class="char-img-text mdl-card__title-text">${character.name}</h2>
+          <p class="char-comic-text char-comic-top mdl-card__supporting-text">
+          ${character.comicTitle}
+          </p>
+          <p class="char-comic-text mdl-card__supporting-text">
+          ${character.comicFormat}
+          </p>
          </div>
          <div class="char-supporting-text mdl-card__supporting-text">
            ${description}
@@ -180,21 +233,16 @@ function getComics(query){
       url: query,
       type: "get",
       success: function(response) {
-        console.log("Response: ", response);
         const comics = response.data.results;
 
         const comicPromiseIDsWithCharacters = createComicPromise(comics);
 
         Promise.all(comicPromiseIDsWithCharacters).then(charactersArr => {
-          console.log("Characters Arr: ", charactersMap);
-
-          // $(".char").remove();
-          // $(".no-result-container").remove();
-          // $(".buttons-container").remove();
+          globalCharsArr = charactersArr;
           page = 0;
 
-          if (charactersMap.size === 0) {
-            showError("No characters found! Try searching for different comics.");
+          if (charactersArr.length === 0) {
+            showError("No characters found! Try searching for different comics or changing the search filters.");
             return;
           }
           $(".submit-button").removeAttr("disabled");
@@ -211,31 +259,6 @@ function getComics(query){
    });
 }
 
-function addListenerToButtons() {
-  $('#forward').click(function () {
-    console.log("Paginating forward");
-
-    if (page < charactersMap.size()) {
-      page++;
-    } else {
-      removePageElements();
-      showError("No more characters to show! Go back to previous pages or start a new search.");
-    }
-
-    showComics();
-  });
-
-  $('#backward').click(function () {
-    console.log("Paginating forward");
-
-    if (page > 0) {
-      page--;
-    }
-
-    showComics();
-  });
-}
-
 function showLoading() {
   removePageElements();
 
@@ -246,15 +269,11 @@ $(document).ready(function() {
   $(".loading-container").hide();
   $(".adv-container").hide();
 
-  var titleExact = false;
-
   $('#switch-1').change(function() {
     if (this.checked) {
       $('.search-label').text('Title matches...');
-      titleExact = true;
     } else {
       $('.search-label').text('Title starts with...');
-      var titleExact = false;
     }
   });
 
@@ -281,14 +300,13 @@ $(document).ready(function() {
     const startYear = document.getElementById('startYear-field').value;
     const format = document.getElementById('format-select').value;
     const orderBy = document.getElementById('orderby-select').value;
-    // const asc = $('input[name=asc]:checked').val();
-    const desc = $('input[name=desc]:checked').val();
+    const orderByVal = $('input[name=orderby-rad]:checked').val();
 
     if (titleStartsWithOrTitle) {
-      if (!titleExact) {
-        query += `&titleStartsWith=${titleStartsWithOrTitle}`;
+      if ($('#switch-1').is(':checked')) {
+        query += `&title=${titleStartsWithOrTitle}`;
       } else {
-        query += `$title=${titleStartsWithOrTitle}`;
+        query += `&titleStartsWith=${titleStartsWithOrTitle}`;
       }
     }
 
@@ -302,13 +320,14 @@ $(document).ready(function() {
 
     if (orderBy) {
       var order = "";
-      if (desc) {
+
+      if (parseInt(orderByVal) === 0) {
         order="-";
       }
       query += `&orderBy=${order}${orderBy}`
     }
 
-    charactersMap.clear();
+    console.log("Query: ", query);
     showLoading();
     $(".submit-button").attr("disabled", "disabled");
     getComics(query);
