@@ -36,6 +36,15 @@ function createComicPromise(comics) {
     }
     return false;
   }).map(comic => {
+    const comicCharacters = JSON.parse(localStorage.getItem(comic.id));
+    if (comicCharacters) {
+      // Depending on if we still use global map, must iterate through comic characters
+      // to store in global storage Map
+      return comicCharacters;
+    } else {
+      localStorage.setItem(comic.id, JSON.stringify({}));
+    }
+
     return new Promise((resolve, reject) => {
       const ts = Date.now().toString();
       const hash = md5(ts+PRIVATE+PUBLIC);
@@ -49,7 +58,12 @@ function createComicPromise(comics) {
           for(var i = 0; i < response.data.results.length; i++) {
             const character = charArray[i];
 
-            if (charactersMap.has(character.name)) {
+            // TODO: Add stuff from local storage to charactersMap somehow
+
+            if (
+              charactersMap.has(character.name) ||
+              JSON.parse(localStorage.getItem(comic.id)[character.name])
+            ) {
               continue;
             }
 
@@ -66,12 +80,20 @@ function createComicPromise(comics) {
               characterInfo.thumbnailExt = "";
             }
 
+            const storedCharDict = JSON.parse(localStorage.getItem(comic.id));
+            storedCharDict[character.name] = characterInfo;
+            localStorage.setItem(comic.id, JSON.stringify(storedCharDict));
+
             charactersMap.set(character.name, characterInfo);
           }
           resolve(charactersMap); // doesn't actually matter what we resolve with here
         },
-        error: function(error) {
-          showError("A server error has occurred. Please reload the page and try again.");
+        error: function(jqXHR, textStatus, errorThrown) {
+          var msg = "A server error has occurred. Please reload the page and try again.";
+          if (jqXHR.status === 429) {
+            msg = "Too many requests have been sent with this API key. Wait one day to try again.";
+          }
+          showError(msg);
         }
       })
     });
@@ -179,9 +201,12 @@ function getComics(query){
           showComics();
         });
      },
-     error: function(error) {
-       console.log(error);
-       showError("A server error has occurred. Please reload the page and try again.");
+     error: function(jqXHR, textStatus, errorThrown) {
+       var msg = "A server error has occurred. Please reload the page and try again.";
+       if (jqXHR.status === 429) {
+         msg = "Too many requests have been sent with this API key. Wait one day to try again.";
+       }
+       showError(msg);
      }
    });
 }
@@ -255,7 +280,10 @@ $(document).ready(function() {
     const titleStartsWithOrTitle = document.getElementById('titleStartWith-input').value;
     const startYear = document.getElementById('startYear-field').value;
     const format = document.getElementById('format-select').value;
-    console.log(format);
+    const orderBy = document.getElementById('orderby-select').value;
+    // const asc = $('input[name=asc]:checked').val();
+    const desc = $('input[name=desc]:checked').val();
+
     if (titleStartsWithOrTitle) {
       if (!titleExact) {
         query += `&titleStartsWith=${titleStartsWithOrTitle}`;
@@ -270,6 +298,14 @@ $(document).ready(function() {
 
     if (format) {
       query += `&format=${format}`;
+    }
+
+    if (orderBy) {
+      var order = "";
+      if (desc) {
+        order="-";
+      }
+      query += `&orderBy=${order}${orderBy}`
     }
 
     charactersMap.clear();

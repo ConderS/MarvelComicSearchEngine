@@ -23,30 +23,32 @@ Everything else came with the HTML5 Boilerplate
 - easy toggle with Title to match title so that user can change to this mode if they want to search for comics for exact title (a more advanced option but likely the most common of the advanced options since we intuitively think of titles of works rather than the year/format)
 - it’s a toggle because if it was another field: doesn’t make sense to want to match with a title name AND to want a separate set of comics that have a similar starting name
 
-- startYear and format are not commonly used, to avoid overwhelming user with options, we have them as advanced options
+- startYear and format and orderBy are not commonly used, to avoid overwhelming user with options, we have them as advanced options
 
-- responsive design - everything still fits and is neatly visible up until 390px in screen width, the standard size of mobile screen is 480 px
+responsive design - everything still fits and is neatly visible up until 390px in screen width, the standard size of mobile screen is 480 px
 - search button moves over to the right at 880px to avoid getting too cluttered with the advanced criteria option
 - text for toggle becomes slightly smaller but not too small with reduced line height at 715px screen width to allow for clear visibility but to also avoid crowding on top of the form fields
 
 - Page iteration buttons are at the top because the user will be able to see most of results without scrolling downwards - this allows for faster page iteration
 
-- Character cards
+Character cards
 - Neutral blue background
 - Text was normally on top of the picture, but different background images could make text hard to see, so made it underneath
 - chose fixed size that was comfortable and allowed for most number of results to fit in one page at time to minimize scrolling
 - clarity of text description
 - responsive grid design that works way beyond mobile size of 480px
 
-- Error
+Error
 - Server Error
-- Identified and gave user solution to get past it that works for me
+    - Identified internal server error (fail to respond) and gave user solution to get past it that works for me
+    - Also identify when server error is due to too man requests (error code 429), and sends custom message to user, telling him/her to wait one day to search again
 - No characters found
-- Identified and gave to user with an approach to try a search for different comics
+    - Identified and gave to user with an approach to try a search for different comics
+- Prevent user from clicking searching button more than once by disabling it when search begins
 
-- Loading
+Loading
 - Was going to do progress but API doesn’t provide progress of the query, so went with generic loading indicator
-- Prevent user from clicking searching button more than once by disabling
+
 
 
 

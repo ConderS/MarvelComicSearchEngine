@@ -96,6 +96,21 @@ textarea {
 /* ==========================================================================
    Author's custom styles
    ========================================================================== */
+body {
+  background-color: #fff;
+  /* background-size: contains;
+  background-position: cover; */
+  /* background-image: url("../img/wallpaper.png"); */
+}
+
+/* .demo-card-square {
+    margin: 10px;
+    border-radius: 2px;
+    box-shadow: rgba(0, 0, 0, 0.8) 1px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px;
+} */
+
+/* Hovering buttons look (Quizlet) */
+/* box-shadow: 0 0.3125rem 1rem 0 rgba(0,0,0,0.24); */
 
 #title {
   text-align: center;
@@ -162,19 +177,39 @@ form {
   text-align: center;
 }
 
+#orderby-container {
+  margin: 20px 20px 0 20px;
+}
+.start-format-container {
+  width: 100%;
+}
 #startYear-container {
   width: 90px;
   display: inline-block;
-  margin: 20px;
+  margin: 0px 20px 0 20px;
 }
 
 #format-container {
   height: 10%;
-  width: 90px;
+  width: 120px;
   display: inline-block;
+  margin: 0px 20px 0 20px;
+}
+
+#orderby-radio-container {
+  height: 40px;
+  width: 60%;
+  margin: auto;
+  margin-bottom: 20px;
+}
+
+.mdl-radio {
   margin: 20px;
 }
 
+#orderby-note {
+  width: 100%;
+}
 
 .adv-submit-button-container {
   margin: auto;
