@@ -7,20 +7,13 @@ const BASE_URI = `https://gateway.marvel.com/v1/public/comics`;
 var showingComics = false;
 var page = 0;
 var globalCharsArr = [];
+var globalQuery = "";
+var gettingMoreComics = false;
 
 function removePageElements() {
   $(".char").remove();
   $(".no-result-container").remove();
   $(".buttons-container").remove();
-  $(".loading").remove();
-  $(".loading-container").hide();
-
-  $(".submit-button").removeAttr("disabled");
-}
-
-function removePageElementsKeepButtons() {
-  $(".char").remove();
-  $(".no-result-container").remove();
   $(".loading").remove();
   $(".loading-container").hide();
 
@@ -39,6 +32,16 @@ function showError(msg) {
   $("#results").append(noResultMsg);
 }
 
+function removePageElementsKeepButtons() {
+  $(".char").remove();
+  $(".no-result-container").remove();
+  $(".loading").remove();
+  $(".loading-container").hide();
+
+  $('.backward').removeAttr("disabled");
+  $(".submit-button").removeAttr("disabled");
+}
+
 function showErrorWithButtons(msg) {
   removePageElementsKeepButtons();
 
@@ -51,19 +54,89 @@ function showErrorWithButtons(msg) {
   $("#results").append(noResultMsg);
 }
 
-function createComicPromise(comics) {
-  const comicPromiseIDsWithCharacters = comics.filter(comic => {
-    if (comic.characters.available > 0) {
-      return true;
+function addListenerToButtons() {
+  $('.forward').click(function() {
+
+    page++;
+
+    if ((page*10) > (globalCharsArr.length-1)) {
+      $('.loading-container').show();
+      $(".submit-button").attr("disabled", "disabled");
+      $('.forward').attr("disabled", "disabled");
+      $('.backward').attr("disabled", "disabled");
+
+      var q = String(globalQuery);
+      q += `&offset=${(page+1)*10}`;
+      gettingMoreComics = true;
+      getComics(q);
+    } else {
+      showComics();
     }
-    return false;
-  }).map(comic => {
+  });
+
+  $('.backward').click(function () {
+    page--;
+    if (page < 0) {
+      page = 0;
+      $('.backward').attr('disabled', 'disabled');
+    }
+    showComics();
+  });
+}
+
+function addButtons() {
+  // Render buttons
+  var buttons =
+    `<div class="buttons-container">
+        <button class="backward mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored">
+          <i class="material-icons">arrow_back</i>
+        </button>
+
+        <p id="page-num">${page+1}</p>
+
+        <button class="forward mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored">
+          <i class="material-icons">arrow_forward</i>
+        </button>
+      </div>`;
+
+  $("#results").before(buttons);
+  $("#results").after(buttons);
+  if (page === 0) {
+    $('.backward').attr('disabled', 'disabled');
+  }
+  // if ((page*10) > (globalCharsArr.length-1)) {
+  //   $('.loading-container').show();
+  //   globalQuery += `&offset=${(page+1)*10}`;
+  //   gettingMoreComics = true;
+  //   getComics(globalQuery);
+  //   // $('.forward').attr('disabled', 'disabled');
+  // }
+}
+
+function createComicPromise(comics) {
+  const comicPromiseIDsWithCharacters = comics.map(comic => {
+
     const storedCharacter = JSON.parse(localStorage.getItem(comic.id));
     if (storedCharacter) {
       // Depending on if we still use global map, must iterate through comic characters
       // to store in global storage Map
       // console.log("Found stored character: ", storedCharacter);
-      // return storedCharacter;
+      console.log(1);
+      return storedCharacter;
+    }
+
+    if (comic.characters.available === 0) {
+      const noCharacterInfo = {
+          name: "No Character Available",
+          description: "",
+          comicTitle: comic.title,
+          comicIssueNumber: comic.issueNumber,
+          comicFormat: comic.format,
+          thumbnail: "",
+          thumbnailExt: ""
+      }
+      localStorage.setItem(comic.id, JSON.stringify(noCharacterInfo));
+      return noCharacterInfo;
     }
 
     return new Promise((resolve, reject) => {
@@ -118,57 +191,6 @@ function createComicPromise(comics) {
   return comicPromiseIDsWithCharacters;
 }
 
-function addListenerToButtons() {
-  $('#forward').click(function () {
-
-    page++;
-
-    console.log(globalCharsArr);
-    console.log(page);
-    showComics();
-
-    if (((page+1)*10) > (globalCharsArr.length-1)) {
-      $('#forward').attr('disabled', 'disabled');
-    }
-  });
-
-  $('#backward').click(function () {
-
-    page--;
-    if (page < 0) {
-      page = 0;
-      $('#backward').attr('disabled', 'disabled');
-    }
-
-    showComics();
-  });
-}
-
-function addButtons() {
-  // Render buttons
-  var buttons =
-    `<div class="buttons-container">
-        <button id="backward" class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored">
-          <i class="material-icons">arrow_back</i>
-        </button>
-
-        <p id="page-num">${page+1}</p>
-
-        <button id="forward" class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored">
-          <i class="material-icons">arrow_forward</i>
-        </button>
-      </div>`;
-
-  $("#results").before(buttons);
-
-  if (page === 0) {
-    $('#backward').attr('disabled', 'disabled');
-  }
-  if (((page+1)*10) > (globalCharsArr.length-1)) {
-    $('#forward').attr('disabled', 'disabled');
-  }
-}
-
 function showComics() {
   removePageElements();
   const charsArr = globalCharsArr;
@@ -188,7 +210,7 @@ function showComics() {
       character.description : "No description available";
 
      var characterCard =
-     `<div class="char mdl-cell mdl-cell--2-col">
+     `<div class="char mdl-cell mdl-cell--3-col">
        <div class="demo-card-square mdl-card mdl-shadow--2dp">
          <div class="mdl-card__title mdl-card--expand">
           <img class="char-img char-img-${i}" src="img/image-not-found.png" />
@@ -229,6 +251,8 @@ function showComics() {
 }
 function getComics(query){
   console.log("Query sent...");
+  $('.adv-container').hide();
+  $('.adv-button').text('More Search Criteria');
    $.ajax({
       url: query,
       type: "get",
@@ -238,14 +262,26 @@ function getComics(query){
         const comicPromiseIDsWithCharacters = createComicPromise(comics);
 
         Promise.all(comicPromiseIDsWithCharacters).then(charactersArr => {
-          globalCharsArr = charactersArr;
-          page = 0;
+
+          if (gettingMoreComics) {
+            globalCharsArr = globalCharsArr.concat(charactersArr);
+            console.log("Global array: ", globalCharsArr.length);
+          } else {
+            globalCharsArr = charactersArr;
+            page = 0;
+          }
 
           if (charactersArr.length === 0) {
-            showError("No characters found! Try searching for different comics or changing the search filters.");
+            if (!gettingMoreComics) {
+              showError("No characters found! Try searching for different comics or changing the search filters.");
+            } else {
+              showErrorWithButtons("No more characters found! Go back to previous pages or start a new search.");
+            }
             return;
           }
           $(".submit-button").removeAttr("disabled");
+          $('.forward').removeAttr("disabled");
+          $('.backward').removeAttr("disabled");
           showComics();
         });
      },
@@ -288,6 +324,9 @@ $(document).ready(function() {
   });
 
   document.getElementById('search-form').addEventListener('submit', function (e) {
+    if (gettingMoreComics) {
+      gettingMoreComics = false;
+    }
     e.preventDefault();
 
     const ts = Date.now().toString();
@@ -295,7 +334,7 @@ $(document).ready(function() {
 
     const COMICS_BASE_URI = `https://gateway.marvel.com/v1/public/comics?apikey=${PUBLIC}`;
 
-    var query = `${COMICS_BASE_URI}&ts=${ts}&hash=${hash}`;
+    var query = `${COMICS_BASE_URI}&ts=${ts}&hash=${hash}&limit=30`;
     const titleStartsWithOrTitle = document.getElementById('titleStartWith-input').value;
     const startYear = document.getElementById('startYear-field').value;
     const format = document.getElementById('format-select').value;
@@ -328,6 +367,7 @@ $(document).ready(function() {
     }
 
     console.log("Query: ", query);
+    globalQuery = query;
     showLoading();
     $(".submit-button").attr("disabled", "disabled");
     getComics(query);
